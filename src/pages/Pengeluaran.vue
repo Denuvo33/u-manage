@@ -45,6 +45,23 @@ const tanggalPengeluaran = ref<string>(new Date().toISOString().split("T")[0]);
 const deskripsiPengeluaran = ref<string>("");
 const nominalPengeluaran = ref<number>(0);
 const editId = ref<string | null>(null);
+const buktiFile = ref<File | null>(null);
+
+const handleFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    buktiFile.value = target.files[0];
+  }
+};
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
 
 // Computed properties
 const totalPengeluaran = computed(() => {
@@ -84,9 +101,14 @@ const openEditPengeluaran = (item: Pengeluaran) => {
   showForm.value = true;
 };
 
-const simpanPengeluaran = () => {
+const simpanPengeluaran = async () => {
   if (!deskripsiPengeluaran.value.trim() || nominalPengeluaran.value <= 0)
     return;
+
+  let buktiBase64: string | undefined = undefined;
+  if (buktiFile.value) {
+    buktiBase64 = await fileToBase64(buktiFile.value);
+  }
 
   if (editId.value) {
     // mode edit
@@ -97,6 +119,7 @@ const simpanPengeluaran = () => {
         tanggal: new Date(tanggalPengeluaran.value),
         deskripsi: deskripsiPengeluaran.value,
         nominal: nominalPengeluaran.value,
+        bukti: buktiBase64 || pengeluaran.value[index].bukti,
       };
     }
   } else {
@@ -106,12 +129,14 @@ const simpanPengeluaran = () => {
       tanggal: new Date(tanggalPengeluaran.value),
       deskripsi: deskripsiPengeluaran.value,
       nominal: nominalPengeluaran.value,
+      bukti: buktiBase64,
     };
     pengeluaran.value.push(pengeluaranBaru);
   }
 
   saveToLocalStorage();
   showForm.value = false;
+  buktiFile.value = null;
 };
 
 const hapusPengeluaran = (id: string) => {
@@ -225,6 +250,15 @@ const hapusPengeluaran = (id: string) => {
             v-model="deskripsiPengeluaran"
           />
         </div>
+        <div class="space-y-2">
+          <Label for="bukti">Bukti Struk (opsional)</Label>
+          <Input
+            id="bukti"
+            type="file"
+            accept="image/*"
+            @change="handleFileChange"
+          />
+        </div>
 
         <div class="flex justify-end space-x-2">
           <Button variant="outline" @click="showForm = false">Batal</Button>
@@ -252,6 +286,8 @@ const hapusPengeluaran = (id: string) => {
               <TableHead>Tanggal</TableHead>
               <TableHead>Deskripsi</TableHead>
               <TableHead>Nominal</TableHead>
+              <TableHead>Bukti</TableHead>
+
               <TableHead class="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -264,6 +300,16 @@ const hapusPengeluaran = (id: string) => {
               <TableCell class="text-destructive"
                 >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
               >
+              <TableCell>
+                <img
+                  v-if="item.bukti"
+                  :src="item.bukti"
+                  alt="Bukti"
+                  class="h-16 w-auto rounded border"
+                />
+                <span v-else class="text-muted-foreground text-sm">-</span>
+              </TableCell>
+
               <TableCell class="text-right flex gap-2 justify-end">
                 <!-- Tombol Edit -->
                 <Button

@@ -14,6 +14,7 @@ export interface Setoran {
   tanggal: Date;
   jenis: 'full' | 'partial' | 'full_all';
    groupId?: string;
+   
 }
 
 export interface Pengeluaran {
@@ -21,6 +22,7 @@ export interface Pengeluaran {
   tanggal: Date;
   deskripsi: string;
   nominal: number;
+   bukti?: string;
 }
 
 export interface AppState {
