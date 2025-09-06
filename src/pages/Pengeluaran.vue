@@ -146,7 +146,7 @@ const hapusPengeluaran = (id: string) => {
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
+  <div class="p-6 space-y-6 max-w-full overflow-x-hidden">
     <!-- Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -231,6 +231,7 @@ const hapusPengeluaran = (id: string) => {
             <Input
               id="tanggal"
               type="date"
+              class="w-full"
               v-model="tanggalPengeluaran"
               :max="new Date().toISOString().split('T')[0]"
             />
@@ -241,6 +242,7 @@ const hapusPengeluaran = (id: string) => {
             <Input
               id="nominal"
               type="number"
+              class="w-full"
               placeholder="Masukkan nominal pengeluaran"
               v-model="nominalPengeluaran"
             />
@@ -252,6 +254,7 @@ const hapusPengeluaran = (id: string) => {
           <Input
             id="deskripsi"
             type="text"
+            class="w-full"
             placeholder="Contoh: Beli bahan masak, transportasi, dll."
             v-model="deskripsiPengeluaran"
           />
@@ -260,6 +263,7 @@ const hapusPengeluaran = (id: string) => {
           <Label for="bukti">Bukti Struk (opsional)</Label>
           <Input
             id="bukti"
+            class="w-full"
             type="file"
             accept="image/*"
             @change="handleFileChange"
@@ -286,51 +290,29 @@ const hapusPengeluaran = (id: string) => {
         <CardDescription> Daftar seluruh pengeluaran kas</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Deskripsi</TableHead>
-              <TableHead>Nominal</TableHead>
-              <TableHead>Bukti</TableHead>
-
-              <TableHead class="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="item in pengeluaranTerbaru" :key="item.id">
-              <TableCell>{{
-                format(new Date(item.tanggal), "dd MMM yyyy", { locale: id })
-              }}</TableCell>
-              <TableCell class="font-medium">{{ item.deskripsi }}</TableCell>
-              <TableCell class="text-destructive"
-                >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
-              >
-              <TableCell>
+        <!-- Mobile View -->
+        <div class="block sm:hidden">
+          <div v-for="item in pengeluaranTerbaru" :key="item.id">
+            <hr>
+            <div class="flex items-center">
+              <div class="ml-4 space-y-1">
                 <img
-                  v-if="item.bukti"
-                  :src="item.bukti"
-                  alt="Bukti"
-                  class="h-16 w-auto rounded border"
-                />
-                <span v-else class="text-muted-foreground text-sm">-</span>
-              </TableCell>
-
-              <TableCell class="text-right flex gap-2 justify-end">
-                <!-- Tombol Edit -->
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  @click="openEditPengeluaran(item)"
-                >
-                  <Edit class="h-5 w-5" />
-                </Button>
-
-                <!-- Tombol Hapus -->
+                  :src="item.bukti" class="w-16 h-auto"></img>
+                <p class="text-sm font-medium leading-none">
+                  {{ item.deskripsi }}
+                </p>
+                <p class="text-sm text-muted-foreground">
+                  {{ new Date(item.tanggal).toLocaleDateString("id-ID") }}
+                </p>
+              </div>
+              <div class="ml-auto font-medium text-destructive">
+                -Rp {{ item.nominal.toLocaleString("id-ID") }}
+              </div>
                 <AlertDialog>
-                  <AlertDialogTrigger
-                    ><Trash2 class="h-6 w-6"
-                  /></AlertDialogTrigger>
+                  <AlertDialogTrigger><Trash2
+               
+                class="h-6 w-6"
+              ></Trash2></AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
@@ -340,24 +322,89 @@ const hapusPengeluaran = (id: string) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction @click="hapusPengeluaran(item.id)"
-                        >Continue</AlertDialogAction
-                      >
+                      <AlertDialogAction  @click="hapusPengeluaran(item.id)">Continue</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </TableCell>
-            </TableRow>
-            <TableRow v-if="pengeluaran.length === 0">
-              <TableCell
-                colspan="4"
-                class="text-center py-4 text-muted-foreground"
-              >
-                Belum ada catatan pengeluaran
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+            </div>
+          </div>
+        </div>
+        <!-- Desktop View -->
+        <div class="hidden sm:block overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Deskripsi</TableHead>
+                <TableHead>Nominal</TableHead>
+                <TableHead>Bukti</TableHead>
+
+                <TableHead class="text-right">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="item in pengeluaranTerbaru" :key="item.id">
+                <TableCell>{{
+                  format(new Date(item.tanggal), "dd MMM yyyy", { locale: id })
+                }}</TableCell>
+                <TableCell class="font-medium">{{ item.deskripsi }}</TableCell>
+                <TableCell class="text-destructive"
+                  >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
+                >
+                <TableCell>
+                  <img
+                    v-if="item.bukti"
+                    :src="item.bukti"
+                    alt="Bukti"
+                    class="h-16 w-auto rounded border"
+                  />
+                  <span v-else class="text-muted-foreground text-sm">-</span>
+                </TableCell>
+
+                <TableCell class="text-right flex gap-2 justify-end">
+                  <!-- Tombol Edit -->
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    @click="openEditPengeluaran(item)"
+                  >
+                    <Edit class="h-5 w-5" />
+                  </Button>
+
+                  <!-- Tombol Hapus -->
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      ><Trash2 class="h-6 w-6"
+                    /></AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Pengeluaran ini akan dihapus secara permanen.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction @click="hapusPengeluaran(item.id)"
+                          >Continue</AlertDialogAction
+                        >
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+              <TableRow v-if="pengeluaran.length === 0">
+                <TableCell
+                  colspan="4"
+                  class="text-center py-4 text-muted-foreground"
+                >
+                  Belum ada catatan pengeluaran
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+        <div></div>
       </CardContent>
     </Card>
   </div>
