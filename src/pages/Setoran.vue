@@ -309,7 +309,7 @@ const simpanSetoranFullAll = () => {
       nominal: NOMINAL_PER_MINGGU.value,
       tanggal: new Date(tanggalSetoran.value),
       jenis: jenisSetoran.value,
-      groupId, // semua dapat groupId sama
+      groupId,
     });
   }
 

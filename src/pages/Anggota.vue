@@ -125,7 +125,7 @@ const cancelForm = () => {
           Manajemen Anggota
         </h1>
         <p class="text-sm md:text-base text-muted-foreground">
-          Kelola data anggota KKN
+          Kelola data anggota
         </p>
       </div>
       <Button class="w-fit" @click="openAddForm">
@@ -152,7 +152,7 @@ const cancelForm = () => {
           >{{ formMode === "add" ? "Tambah" : "Edit" }} Anggota</CardTitle
         >
         <CardDescription>
-          {{ formMode === "add" ? "Tambahkan" : "Perbarui" }} data anggota KKN
+          {{ formMode === "add" ? "Tambahkan" : "Perbarui" }} data anggota
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">

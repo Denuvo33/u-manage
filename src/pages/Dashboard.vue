@@ -1,6 +1,6 @@
 <!-- pages/DashboardPage.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import {
   Card,
   CardContent,
@@ -8,8 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Users, Wallet, FileText } from "lucide-vue-next";
+import {
+  TrendingUp,
+  Users,
+  Wallet,
+  FileText,
+  FileDown,
+  FileUp,
+  FileJson,
+} from "lucide-vue-next";
 import type { Anggota, Setoran, Pengeluaran } from "@/types";
 import { Input } from "@/components/ui/input";
 
@@ -97,15 +107,192 @@ function updateMaksSetoranOrang() {
   localStorage.setItem("maksSetoranOrang", JSON.stringify(value));
   console.log("Maksimum setoran orang updated:", value);
 }
+const exportData = () => {
+  const data = {
+    anggota: JSON.parse(localStorage.getItem("anggota") || "[]"),
+    setoran: JSON.parse(localStorage.getItem("setoran") || "[]"),
+    pengeluaran: JSON.parse(localStorage.getItem("pengeluaran") || "[]"),
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "kkn-data.json";
+  link.click();
+};
+
+const importData = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = async (e: any) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const imported = JSON.parse(text);
+
+    // ambil data lama
+    const current = {
+      anggota: JSON.parse(localStorage.getItem("anggota") || "[]"),
+      setoran: JSON.parse(localStorage.getItem("setoran") || "[]"),
+      pengeluaran: JSON.parse(localStorage.getItem("pengeluaran") || "[]"),
+    };
+
+    // gabungkan (merge by id supaya tidak duplikat)
+    const merged = {
+      anggota: mergeById(current.anggota, imported.anggota),
+      setoran: mergeById(current.setoran, imported.setoran),
+      pengeluaran: mergeById(current.pengeluaran, imported.pengeluaran),
+    };
+
+    // simpan hasil merge
+    localStorage.setItem("anggota", JSON.stringify(merged.anggota));
+    localStorage.setItem("setoran", JSON.stringify(merged.setoran));
+    localStorage.setItem("pengeluaran", JSON.stringify(merged.pengeluaran));
+
+    location.reload();
+  };
+  input.click();
+};
+
+function mergeById(existing: any[], incoming: any[]) {
+  const map = new Map(existing.map((item) => [item.id, item]));
+  incoming.forEach((item) => {
+    if (!map.has(item.id)) {
+      map.set(item.id, item);
+    }
+  });
+  return Array.from(map.values());
+}
+
+function exportCsv() {
+  const anggota = JSON.parse(localStorage.getItem("anggota") || "[]");
+  const setoran = JSON.parse(localStorage.getItem("setoran") || "[]");
+  const pengeluaran = JSON.parse(localStorage.getItem("pengeluaran") || "[]");
+
+  // helper buat convert ke CSV
+  const toCsv = (arr: any[]) => {
+    if (arr.length === 0) return "";
+    const headers = Object.keys(arr[0]);
+    const rows = arr.map((obj) =>
+      headers
+        .map((h) => {
+          let val = obj[h];
+          if (h === "id" || h === "tanggal") {
+            return `"${val}"`; // bungkus biar aman
+          }
+          return val;
+        })
+        .join(",")
+    );
+    return [headers.join(","), ...rows].join("\n");
+  };
+
+  const saveFile = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  };
+
+  saveFile(toCsv(anggota), "anggota.csv");
+  saveFile(toCsv(setoran), "setoran.csv");
+  saveFile(toCsv(pengeluaran), "pengeluaran.csv");
+}
+function importCsv() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".csv";
+  input.multiple = true; // bisa pilih beberapa file sekaligus
+  input.onchange = async (e: any) => {
+    const files: FileList = e.target.files;
+    if (!files.length) return;
+
+    const parseCsv = async (file: File) => {
+      const text = await file.text();
+      const [headerLine, ...lines] = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const headers = headerLine.split(",");
+      return lines.map((line) => {
+        const values = line.split(",").map((v) => v.replace(/^"|"$/g, "")); // hilangkan kutip
+        const obj: any = {};
+        headers.forEach((h, i) => {
+          if (h === "nominal") {
+            obj[h] = Number(values[i]) || 0;
+          } else {
+            obj[h] = values[i];
+          }
+        });
+        return obj;
+      });
+    };
+
+    const current = {
+      anggota: JSON.parse(localStorage.getItem("anggota") || "[]"),
+      setoran: JSON.parse(localStorage.getItem("setoran") || "[]"),
+      pengeluaran: JSON.parse(localStorage.getItem("pengeluaran") || "[]"),
+    };
+
+    for (const file of Array.from(files)) {
+      const parsed = await parseCsv(file);
+
+      if (file.name.includes("anggota")) {
+        current.anggota = mergeById(current.anggota, parsed);
+      } else if (file.name.includes("setoran")) {
+        current.setoran = mergeById(current.setoran, parsed);
+      } else if (file.name.includes("pengeluaran")) {
+        current.pengeluaran = mergeById(current.pengeluaran, parsed);
+      }
+    }
+
+    localStorage.setItem("anggota", JSON.stringify(current.anggota));
+    localStorage.setItem("setoran", JSON.stringify(current.setoran));
+    localStorage.setItem("pengeluaran", JSON.stringify(current.pengeluaran));
+
+    alert("Data CSV berhasil diimport & digabung!");
+    location.reload();
+  };
+  input.click();
+}
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
+  <div class="p-6 space-y-2">
     <div>
       <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
       <p class="text-muted-foreground">
         Ringkasan keuangan dan status setoran anggota
       </p>
+    </div>
+
+    <div class="flex gap-2">
+      <Button @click="importData"><FileJson></FileJson> Import JSON</Button>
+
+      <Button @click="exportData"><FileJson></FileJson> Export JSON</Button>
+    </div>
+    <p class="text-gray-500">
+      Import / Export sebagai json jikan ingin melihat seluruh data secara
+      langsung tanpa terpisah (Anda dapat membuka file .json dari browser).
+    </p>
+    <div class="flex gap-2">
+      <Button @click="importCsv"><FileDown></FileDown> Import CSV</Button>
+
+      <Button @click="exportCsv"><FileUp></FileUp> Export CSV</Button>
+    </div>
+    <p class="text-gray-500">
+      File CSV yang di export akan terpecah menjadi beberapa file.Jika ingin
+      mengimport data CSV,anda harus mengimport semua file tersebut.
+    </p>
+
+    <div class="font-bold bg-green-300 rounded text-green-600 w-fit p-1">
+      Pastikan selalu membackup data dikarenakan ini hanya tersimpan secara
+      lokal di browser.
     </div>
 
     <!-- Stats Cards -->

@@ -126,7 +126,7 @@ const hapusPengeluaran = (id: string) => {
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-3xl font-bold tracking-tight">Pengeluaran</h1>
-        <p class="text-muted-foreground">Kelola pengeluaran kas KKN</p>
+        <p class="text-muted-foreground">Kelola pengeluaran kas</p>
       </div>
       <Button @click="openTambahPengeluaran">
         <Plus class="h-4 w-4 mr-2" />
@@ -190,7 +190,7 @@ const hapusPengeluaran = (id: string) => {
           {{ editId ? "Edit Pengeluaran" : "Tambah Pengeluaran" }}
         </CardTitle>
         <CardDescription>
-          {{ editId ? "Perbarui" : "Tambahkan" }} catatan pengeluaran kas KKN
+          {{ editId ? "Perbarui" : "Tambahkan" }} catatan pengeluaran kas
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
@@ -243,7 +243,7 @@ const hapusPengeluaran = (id: string) => {
     <Card>
       <CardHeader>
         <CardTitle>Histori Pengeluaran</CardTitle>
-        <CardDescription> Daftar seluruh pengeluaran kas KKN </CardDescription>
+        <CardDescription> Daftar seluruh pengeluaran kas</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
