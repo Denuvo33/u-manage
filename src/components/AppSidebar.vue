@@ -24,7 +24,7 @@ const items = [
 </script>
 
 <template>
-  <Sidebar class="bg-red-500">
+  <Sidebar>
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel
@@ -40,7 +40,7 @@ const items = [
                 <RouterLink
                   :to="item.url"
                   :class="{
-                    'bg-blue-100 text-blue-600 hover:bg-blue-600':
+                    'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500':
                       route.path === item.url,
                   }"
                   class="flex items-center gap-3 px-3 py-2 transition-all rounded-lg"

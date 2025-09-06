@@ -117,18 +117,15 @@ const cancelForm = () => {
 <template>
   <div class="p-4 md:p-6 space-y-6">
     <!-- Header -->
-    <div
-      class="flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-    >
+    <div class="flex flex-col md:flex-row md:justify-between gap-3">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight gap-2">
+          <UserRound class="w-7 h-7 text-blue-600" />
           Manajemen Anggota
         </h1>
-        <p class="text-sm md:text-base text-muted-foreground">
-          Kelola data anggota
-        </p>
+        <p class="text-muted-foreground">Kelola data anggota dengan mudah</p>
       </div>
-      <Button class="w-fit" @click="openAddForm">
+      <Button class="w-fit shadow-md" @click="openAddForm">
         <Plus class="h-4 w-4 mr-2" />
         Tambah Anggota
       </Button>

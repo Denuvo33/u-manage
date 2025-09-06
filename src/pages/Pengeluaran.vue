@@ -161,21 +161,25 @@ const hapusPengeluaran = (id: string) => {
 
     <!-- Statistik -->
     <div class="grid gap-4 md:grid-cols-3">
-      <Card>
+      <Card
+        class="bg-gradient-to-r shadow-lg from-red-400 hover:scale-[1.02] transition-transform duration-200 text-white to-red-600"
+      >
         <CardHeader
           class="flex flex-row items-center justify-between space-y-0 pb-2"
         >
           <CardTitle class="text-sm font-medium">Total Pengeluaran</CardTitle>
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold text-destructive">
+          <div class="text-2xl font-bold">
             Rp {{ totalPengeluaran.toLocaleString("id-ID") }}
           </div>
           <p class="text-xs text-muted-foreground">Seluruh periode</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card
+        class="bg-gradient-to-r shadow-lg from-green-400 hover:scale-[1.02] transition-transform duration-200 text-white to-green-600"
+      >
         <CardHeader
           class="flex flex-row items-center justify-between space-y-0 pb-2"
         >
@@ -187,7 +191,9 @@ const hapusPengeluaran = (id: string) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card
+        class="bg-gradient-to-r shadow-lg from-blue-400 hover:scale-[1.02] transition-transform duration-200 text-white to-blue-600"
+      >
         <CardHeader
           class="flex flex-row items-center justify-between space-y-0 pb-2"
         >
