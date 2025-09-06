@@ -1,6 +1,6 @@
 <!-- pages/SetoranPage.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   Card,
   CardContent,
@@ -42,7 +42,6 @@ import { Plus, Save, Trash2 } from "lucide-vue-next";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import type { Anggota, Setoran } from "@/types";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Data state
 const anggota = ref<Anggota[]>([]);

@@ -27,7 +27,12 @@ const items = [
   <Sidebar>
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>Bendahara App</SidebarGroupLabel>
+        <SidebarGroupLabel
+          class="font-extrabold text-transparent text-2xl bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 tracking-wide drop-shadow-md"
+        >
+          U-Kelola
+        </SidebarGroupLabel>
+
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
@@ -35,12 +40,13 @@ const items = [
                 <RouterLink
                   :to="item.url"
                   :class="{
-                    'bg-accent': route.path === item.url,
+                    'bg-blue-100 text-blue-600 hover:bg-blue-600':
+                      route.path === item.url,
                   }"
-                  class="flex items-center gap-3 px-3 py-2 transition-all rounded-lg hover:bg-accent"
+                  class="flex items-center gap-3 px-3 py-2 transition-all rounded-lg"
                 >
                   <component :is="item.icon" class="h-4 w-4" />
-                  <span>{{ item.title }}</span>
+                  <span class="font-bold">{{ item.title }}</span>
                 </RouterLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

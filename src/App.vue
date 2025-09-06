@@ -5,7 +5,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 </script>
 
 <template>
-  <head title="aaa"></head>
   <section>
     <SidebarProvider>
       <AppSidebar />
