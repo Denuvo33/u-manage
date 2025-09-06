@@ -13,6 +13,7 @@ export interface Setoran {
   nominal: number;
   tanggal: Date;
   jenis: 'full' | 'partial' | 'full_all';
+   groupId?: string;
 }
 
 export interface Pengeluaran {

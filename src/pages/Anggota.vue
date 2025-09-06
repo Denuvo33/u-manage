@@ -18,11 +18,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import { Plus, Edit, Trash2, Search } from "lucide-vue-next";
-import type { Anggota } from "@/types";
+import type { Anggota, Setoran } from "@/types";
 
 // State
 const anggota = ref<Anggota[]>([]);
+const setoran = ref<Setoran[]>([]);
 const searchQuery = ref("");
 const showForm = ref(false);
 const formMode = ref<"add" | "edit">("add");
@@ -44,14 +57,17 @@ const filteredAnggota = computed(() => {
 // Load data from localStorage
 onMounted(() => {
   const savedAnggota = localStorage.getItem("anggota");
+  const savedSetoran = localStorage.getItem("setoran");
   if (savedAnggota) anggota.value = JSON.parse(savedAnggota);
+  if (savedSetoran) setoran.value = JSON.parse(savedSetoran);
 });
 
 // Save data to localStorage
 const saveToLocalStorage = () => {
   localStorage.setItem("anggota", JSON.stringify(anggota.value));
-};
 
+  localStorage.setItem("setoran", JSON.stringify(setoran.value));
+};
 // Handle form operations
 const openAddForm = () => {
   formMode.value = "add";
@@ -89,10 +105,9 @@ const saveAnggota = () => {
 };
 
 const deleteAnggota = (id: string) => {
-  if (confirm("Apakah Anda yakin ingin menghapus anggota ini?")) {
-    anggota.value = anggota.value.filter((a) => a.id !== id);
-    saveToLocalStorage();
-  }
+  anggota.value = anggota.value.filter((a) => a.id !== id);
+  setoran.value = setoran.value.filter((s) => s.anggotaId !== id);
+  saveToLocalStorage();
 };
 
 const cancelForm = () => {
@@ -191,13 +206,25 @@ const cancelForm = () => {
                   >
                     <Edit class="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    @click="deleteAnggota(person.id)"
-                  >
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      ><Trash2 class="w-6 h-6"
+                    /></AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Anggota ini akan dihapus secara permanen.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction @click="deleteAnggota(person.id)"
+                          >Continue</AlertDialogAction
+                        >
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TableCell>
               </TableRow>
               <TableRow v-if="filteredAnggota.length === 0">

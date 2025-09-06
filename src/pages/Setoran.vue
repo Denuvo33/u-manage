@@ -288,59 +288,52 @@ const simpanSetoranSingle = () => {
 };
 
 const simpanSetoranFullAll = () => {
-  const totalNominal = NOMINAL_PER_MINGGU.value * jumlahMingguBayar.value;
-  console.log("mulai logic store all week");
+  const groupId = `group_${Date.now()}_${selectedAnggota.value}`; // id unik utk grup
 
   const setoranBaru: Setoran[] = [];
   const startMinggu = mingguKeNumber.value;
 
   for (let i = 0; i < jumlahMingguBayar.value; i++) {
     const mingguTarget = startMinggu + i;
-
     if (mingguTarget > TOTAL_MINGGU_SEMESTER) break;
 
-    // cek apakah sudah pernah bayar minggu ini
     const sudahBayar = setoran.value.some(
       (s) => s.anggotaId === selectedAnggota.value && s.minggu === mingguTarget
     );
-    if (sudahBayar) {
-      console.log(`Minggu ${mingguTarget} sudah dibayar, skip`);
+    if (sudahBayar) continue;
 
-      continue;
-    }
-
-    const newSetoran: Setoran = {
+    setoranBaru.push({
       id: `${Date.now()}_${i}`,
       anggotaId: selectedAnggota.value,
       minggu: mingguTarget,
       nominal: NOMINAL_PER_MINGGU.value,
       tanggal: new Date(tanggalSetoran.value),
-      jenis: "full",
-    };
-
-    setoranBaru.push(newSetoran);
+      jenis: jenisSetoran.value,
+      groupId, // semua dapat groupId sama
+    });
   }
 
-  if (setoranBaru.length === 0) {
-    console.log("Semua minggu yang dipilih sudah dibayar");
-    alert("Semua minggu yang dipilih sudah dibayar");
-    return;
-  }
+  if (setoranBaru.length === 0) return;
 
   setoran.value.push(...setoranBaru);
   saveToLocalStorage();
-
-  console.log("Multi-week setoran saved:", setoranBaru);
-  alert(`Berhasil menyimpan setoran untuk ${setoranBaru.length} minggu`);
   showForm.value = false;
 };
 
 const hapusSetoran = (id: string) => {
-  setoran.value = setoran.value.filter((s) => s.id !== id);
+  const target = setoran.value.find((s) => s.id === id);
+
+  if (!target) return;
+
+  if (target.groupId) {
+    setoran.value = setoran.value.filter((s) => s.groupId !== target.groupId);
+  } else {
+    setoran.value = setoran.value.filter((s) => s.id !== id);
+  }
+
   saveToLocalStorage();
 };
 
-// Watch for jenisSetoran change
 watch(jenisSetoran, (newJenis) => {
   if (newJenis === "full") {
     nominalSetoran.value = NOMINAL_PER_MINGGU.value;
@@ -661,11 +654,19 @@ const refreshData = async () => {
                   <span
                     :class="
                       item.jenis === 'full'
-                        ? 'text-green-600'
-                        : 'text-amber-600'
+                        ? 'text-blue-600'
+                        : item.jenis === 'partial'
+                        ? 'text-amber-600'
+                        : 'text-green-600'
                     "
                   >
-                    {{ item.jenis === "full" ? "Penuh" : "Sebagian" }}
+                    {{
+                      item.jenis === "full"
+                        ? "Penuh"
+                        : item.jenis === "partial"
+                        ? "Sebagian"
+                        : "Lunas"
+                    }}
                   </span>
                 </TableCell>
                 <TableCell
