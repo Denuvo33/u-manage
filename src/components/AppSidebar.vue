@@ -24,7 +24,7 @@ const items = [
 </script>
 
 <template>
-  <Sidebar>
+  <Sidebar class="bg-red-500">
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel
@@ -54,5 +54,9 @@ const items = [
         </SidebarGroupContent>
       </SidebarGroup>
     </SidebarContent>
+    <!-- Footer -->
+    <div class="p-4 border-t text-center text-sm">
+      © 2025 <span class="font-semibold">Syahid Al Baddry</span>
+    </div>
   </Sidebar>
 </template>

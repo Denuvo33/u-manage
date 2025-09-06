@@ -204,7 +204,7 @@ const cancelForm = () => {
                     size="icon"
                     @click="openEditForm(person)"
                   >
-                    <Edit class="h-4 w-4" />
+                    <Edit />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger

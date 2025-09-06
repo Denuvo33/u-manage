@@ -274,7 +274,7 @@ const hapusPengeluaran = (id: string) => {
     </Card>
 
     <!-- Daftar Pengeluaran -->
-    <Card>
+    <Card class="max-h-120 overflow-y-auto">
       <CardHeader>
         <CardTitle>Histori Pengeluaran</CardTitle>
         <CardDescription> Daftar seluruh pengeluaran kas</CardDescription>

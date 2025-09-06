@@ -1,6 +1,6 @@
 <!-- pages/DashboardPage.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   Card,
   CardContent,
@@ -19,6 +19,7 @@ import {
   FileDown,
   FileUp,
   FileJson,
+  MessageCircleWarning,
 } from "lucide-vue-next";
 import type { Anggota, Setoran, Pengeluaran } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -27,8 +28,8 @@ import { Input } from "@/components/ui/input";
 const anggota = ref<Anggota[]>([]);
 const setoran = ref<Setoran[]>([]);
 const pengeluaran = ref<Pengeluaran[]>([]);
-const maksSetoranMingguan = ref<number | null>(null);
-const maksSetoranOrang = ref<number | null>(null);
+const maksSetoranMingguan = ref<number>(0);
+const maksSetoranOrang = ref<number>(0);
 
 // Computed properties
 const totalPemasukan = computed(() => {
@@ -76,31 +77,6 @@ onMounted(() => {
   if (savedMaksSetoranOrang)
     maksSetoranOrang.value = JSON.parse(savedMaksSetoranOrang);
 });
-
-function formatNumber(value: number | null): string {
-  if (value === null || isNaN(value)) return "";
-  return value.toLocaleString("id-ID");
-}
-
-function parseNumber(value: string): number | null {
-  const plain = value.replace(/\./g, ""); // hapus titik pemisah
-  const num = Number(plain);
-  return isNaN(num) ? null : num;
-}
-
-const handleInputMingguan = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  maksSetoranMingguan.value = parseNumber(target.value);
-  target.value = formatNumber(maksSetoranMingguan.value);
-  updateMaksSetoranMingguan();
-};
-
-const handleInputOrang = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  maksSetoranOrang.value = parseNumber(target.value);
-  target.value = formatNumber(maksSetoranOrang.value);
-  updateMaksSetoranOrang();
-};
 
 function updateMaksSetoranOrang() {
   const value = Number(maksSetoranOrang.value) || 0;
@@ -260,6 +236,18 @@ function importCsv() {
   };
   input.click();
 }
+
+watch(maksSetoranMingguan, (val) => {
+  const value = Number(val) || 0;
+  localStorage.setItem("maksSetoranMingguan", JSON.stringify(value));
+  console.log("Maksimum setoran mingguan updated:", value);
+});
+
+watch(maksSetoranOrang, (val) => {
+  const value = Number(val) || 0;
+  localStorage.setItem("maksSetoranOrang", JSON.stringify(value));
+  console.log("Maksimum setoran orang updated:", value);
+});
 </script>
 
 <template>
@@ -271,91 +259,103 @@ function importCsv() {
       </p>
     </div>
 
-    <div class="flex gap-2">
-      <Button @click="importData"><FileJson></FileJson> Import JSON</Button>
+    <div class="space-y-4">
+      <Card class="p-4 bg-white shadow-sm border">
+        <h2 class="font-semibold text-lg mb-2">Import & Export Data</h2>
+        <div class="flex gap-3 flex-wrap">
+          <Button @click="importData" class="gap-2">
+            <FileJson class="w-5 h-5" /> Import JSON
+          </Button>
+          <Button @click="exportData" class="gap-2">
+            <FileJson class="w-5 h-5" /> Export JSON
+          </Button>
+          <Button @click="importCsv" class="gap-2">
+            <FileDown class="w-5 h-5" /> Import CSV
+          </Button>
+          <Button @click="exportCsv" class="gap-2">
+            <FileUp class="w-5 h-5" /> Export CSV
+          </Button>
+        </div>
 
-      <Button @click="exportData"><FileJson></FileJson> Export JSON</Button>
+        <div class="mt-4 space-y-2 text-sm text-gray-600">
+          <p>
+            <span class="font-medium">JSON</span> → menyimpan semua data dalam
+            satu file yang mudah dibuka langsung di browser.
+          </p>
+          <p>
+            <span class="font-medium">CSV</span> → diexport terpisah menjadi
+            beberapa file. Untuk import ulang, semua file harus dimasukkan.
+          </p>
+        </div>
+      </Card>
+
+      <div
+        class="p-3 rounded-md bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-300 text-yellow-800 flex items-start gap-2"
+      >
+        <MessageCircleWarning></MessageCircleWarning>
+        <p class="text-sm">
+          Pastikan selalu <b>membackup data</b> karena semua informasi hanya
+          tersimpan secara lokal di browser.
+        </p>
+      </div>
     </div>
-    <p class="text-gray-500">
-      Import / Export sebagai json jikan ingin melihat seluruh data secara
-      langsung tanpa terpisah (Anda dapat membuka file .json dari browser).
-    </p>
-    <div class="flex gap-2">
-      <Button @click="importCsv"><FileDown></FileDown> Import CSV</Button>
 
-      <Button @click="exportCsv"><FileUp></FileUp> Export CSV</Button>
-    </div>
-    <p class="text-gray-500">
-      File CSV yang di export akan terpecah menjadi beberapa file.Jika ingin
-      mengimport data CSV,anda harus mengimport semua file tersebut.
-    </p>
-
-    <div class="font-bold bg-green-300 rounded text-green-600 w-fit p-1">
-      Pastikan selalu membackup data dikarenakan ini hanya tersimpan secara
-      lokal di browser.
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <Card
+        class="bg-gradient-to-r from-green-400 to-green-600 text-white shadow-lg hover:scale-[1.02] transition-transform duration-200"
+      >
+        <CardHeader class="flex flex-row items-center justify-between pb-2">
           <CardTitle class="text-sm font-medium">Total Pemasukan</CardTitle>
-          <TrendingUp class="h-4 w-4 text-muted-foreground" />
+          <TrendingUp class="h-6 w-6 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">
+          <div class="text-3xl font-extrabold">
             Rp {{ totalPemasukan.toLocaleString("id-ID") }}
           </div>
-          <p class="text-xs text-muted-foreground">
-            Dari {{ jumlahMinggu }} minggu
-          </p>
+          <p class="text-xs opacity-80">Dari {{ jumlahMinggu }} minggu</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
+      <Card
+        class="bg-gradient-to-r from-red-400 to-red-600 text-white shadow-lg hover:scale-[1.02] transition-transform duration-200"
+      >
+        <CardHeader class="flex flex-row items-center justify-between pb-2">
           <CardTitle class="text-sm font-medium">Total Pengeluaran</CardTitle>
-          <Wallet class="h-4 w-4 text-muted-foreground" />
+          <Wallet class="h-6 w-6 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">
+          <div class="text-3xl font-extrabold">
             Rp {{ totalPengeluaran.toLocaleString("id-ID") }}
           </div>
-          <p class="text-xs text-muted-foreground">
-            {{ pengeluaran.length }} transaksi
-          </p>
+          <p class="text-xs opacity-80">{{ pengeluaran.length }} transaksi</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
+      <Card
+        class="bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg hover:scale-[1.02] transition-transform duration-200"
+      >
+        <CardHeader class="flex flex-row items-center justify-between pb-2">
           <CardTitle class="text-sm font-medium">Saldo Sisa</CardTitle>
-          <FileText class="h-4 w-4 text-muted-foreground" />
+          <FileText class="h-6 w-6 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">
+          <div class="text-3xl font-extrabold">
             Rp {{ saldoSisa.toLocaleString("id-ID") }}
           </div>
-          <p class="text-xs text-muted-foreground">Tersedia untuk digunakan</p>
+          <p class="text-xs opacity-80">Tersedia untuk digunakan</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
+      <Card
+        class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg hover:scale-[1.02] transition-transform duration-200"
+      >
+        <CardHeader class="flex flex-row items-center justify-between pb-2">
           <CardTitle class="text-sm font-medium">Jumlah Anggota</CardTitle>
-          <Users class="h-4 w-4 text-muted-foreground" />
+          <Users class="h-6 w-6 opacity-80" />
         </CardHeader>
         <CardContent>
-          <div class="text-2xl font-bold">{{ anggota.length }}</div>
-          <p class="text-xs text-muted-foreground">Aktif</p>
+          <div class="text-3xl font-extrabold">{{ anggota.length }}</div>
+          <p class="text-xs opacity-80">Aktif</p>
         </CardContent>
       </Card>
     </div>
@@ -364,46 +364,61 @@ function importCsv() {
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
       <Card class="col-span-4">
         <CardHeader>
-          <CardTitle>Status Setoran Minggu Ini</CardTitle>
-          <CardDescription>
+          <CardTitle class="text-lg font-semibold"
+            >Status Setoran Minggu Ini</CardTitle
+          >
+          <CardDescription class="space-y-3">
             <div>
-              <span class="text-sm font-medium"
-                >Atur jumlah setoran maksimal mingguan</span
-              >
+              <span class="text-sm font-medium">Setoran Maksimal Mingguan</span>
               <Input
-                type="text"
-                class="w-8/12 ml-2"
-                :value="formatNumber(maksSetoranMingguan)"
-                @input="handleInputMingguan"
+                type="number"
+                class="w-8/12 ml-2 mt-1"
+                v-model.number="maksSetoranMingguan"
+                @input="updateMaksSetoranMingguan"
               />
             </div>
 
             <div>
               <span class="text-sm font-medium"
-                >Atur jumlah setoran maksimal per Anggota</span
+                >Setoran Maksimal per Anggota</span
               >
               <Input
-                type="text"
-                class="w-8/12 ml-2"
-                :value="formatNumber(maksSetoranOrang)"
-                @input="handleInputOrang"
+                type="number"
+                class="w-8/12 ml-2 mt-1"
+                v-model.number="maksSetoranOrang"
+                @input="updateMaksSetoranOrang"
               />
             </div>
           </CardDescription>
         </CardHeader>
+
         <CardContent class="pl-2">
           <div v-for="person in anggota" :key="person.id" class="mb-4">
             <div class="flex items-center justify-between mb-1">
               <span class="text-sm font-medium">{{ person.nama }}</span>
-              <span class="text-sm text-muted-foreground"
-                >Rp {{ person.totalSetoran.toLocaleString("id-ID") }}</span
-              >
+              <span class="text-sm font-semibold text-gray-600">
+                Rp {{ person.totalSetoran.toLocaleString("id-ID") }}
+              </span>
             </div>
+
             <Progress
               :model-value="
                 (person.totalSetoran / (maksSetoranOrang ?? 1500000)) * 100
               "
-              class="h-2"
+              class="h-3 rounded-lg overflow-hidden"
+              :class="{
+                'bg-red-200 [&>div]:bg-red-500':
+                  (person.totalSetoran / (maksSetoranOrang ?? 1500000)) * 100 <
+                  40,
+                'bg-yellow-200 [&>div]:bg-yellow-500':
+                  (person.totalSetoran / (maksSetoranOrang ?? 1500000)) * 100 >=
+                    40 &&
+                  (person.totalSetoran / (maksSetoranOrang ?? 1500000)) * 100 <
+                    80,
+                'bg-green-200 [&>div]:bg-green-500':
+                  (person.totalSetoran / (maksSetoranOrang ?? 1500000)) * 100 >=
+                  80,
+              }"
             />
           </div>
         </CardContent>
