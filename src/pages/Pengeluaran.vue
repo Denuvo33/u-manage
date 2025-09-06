@@ -148,7 +148,7 @@ const hapusPengeluaran = (id: string) => {
 <template>
   <div class="p-6 space-y-6 max-w-full overflow-x-hidden">
     <!-- Header -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-wrap gap-2 justify-between items-center">
       <div>
         <h1 class="text-3xl font-bold tracking-tight">Pengeluaran</h1>
         <p class="text-muted-foreground">Kelola pengeluaran kas</p>

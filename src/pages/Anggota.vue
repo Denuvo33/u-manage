@@ -30,7 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { Plus, Edit, Trash2, Search } from "lucide-vue-next";
+import { Plus, Edit, Trash2 } from "lucide-vue-next";
 import type { Anggota, Setoran } from "@/types";
 
 // State
@@ -115,9 +115,9 @@ const cancelForm = () => {
 };
 </script>
 <template>
-  <div class="p-4 md:p-6 space-y-6">
+  <div class="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:justify-between gap-3">
+    <div class="flex flex-wrap space-y-5 space-x-4 sm:space-y-1">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold tracking-tight gap-2">
           <UserRound class="w-7 h-7 text-blue-600" />
@@ -125,7 +125,7 @@ const cancelForm = () => {
         </h1>
         <p class="text-muted-foreground">Kelola data anggota dengan mudah</p>
       </div>
-      <Button class="w-fit shadow-md" @click="openAddForm">
+      <Button class="shadow-md" @click="openAddForm">
         <Plus class="h-4 w-4 mr-2" />
         Tambah Anggota
       </Button>
@@ -133,11 +133,10 @@ const cancelForm = () => {
 
     <!-- Search -->
     <div class="relative">
-      <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"
         placeholder="Cari anggota..."
-        class="pl-8"
+        class="w-full"
         v-model="searchQuery"
       />
     </div>
@@ -156,6 +155,7 @@ const cancelForm = () => {
         <Input
           v-model="editedAnggota.nama"
           placeholder="Nama Anggota"
+          class="w-full"
           required
         />
         <div class="flex flex-col sm:flex-row justify-end gap-2">
@@ -168,7 +168,7 @@ const cancelForm = () => {
     </Card>
 
     <!-- Members Table -->
-    <Card v-if="!showForm">
+    <Card v-if="!showForm" class="max-w-full overflow-hidden">
       <CardHeader>
         <CardTitle>Daftar Anggota</CardTitle>
         <CardDescription
@@ -176,8 +176,41 @@ const cancelForm = () => {
         >
       </CardHeader>
       <CardContent>
-        <div class="overflow-x-auto">
-          <Table class="min-w-[600px]">
+        <div class="block sm:hidden w-full">
+          <div
+            v-for="person in filteredAnggota"
+            class="p-4 y-2"
+            :key="person.id"
+          >
+            <hr />
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium">{{ person.nama }}</span>
+              <span class="text-sm font-semibold text-gray-600">
+                Rp {{ person.totalSetoran.toLocaleString("id-ID") }}
+              </span>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger><Trash2></Trash2></AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Anggota ini akan dihapus secara permanen.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction @click="deleteAnggota(person.id)"
+                    >Continue</AlertDialogAction
+                  >
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+        <!-- Desktop view -->
+        <div class="hidden sm:block overflow-x-auto">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Nama</TableHead>
