@@ -1,6 +1,6 @@
 <!-- pages/DashboardPage.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   Card,
   CardContent,
@@ -82,6 +82,7 @@ const handleInputMingguan = (e: Event) => {
   const target = e.target as HTMLInputElement;
   maksSetoranMingguan.value = parseNumber(target.value);
   target.value = formatNumber(maksSetoranMingguan.value);
+  updateMaksSetoranMingguan();
 };
 
 const handleInputOrang = (e: Event) => {

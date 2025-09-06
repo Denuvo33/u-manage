@@ -42,6 +42,7 @@ import { Plus, Save, Trash2 } from "lucide-vue-next";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import type { Anggota, Setoran } from "@/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Data state
 const anggota = ref<Anggota[]>([]);
@@ -243,6 +244,7 @@ const simpanSetoran = () => {
 
   if (jenisSetoran.value === "full_all") {
     // Bayar untuk beberapa minggu sekaligus
+    console.log("Simpan setoran full all");
     simpanSetoranFullAll();
   } else {
     // Bayar untuk minggu ini saja
@@ -287,25 +289,25 @@ const simpanSetoranSingle = () => {
 
 const simpanSetoranFullAll = () => {
   const totalNominal = NOMINAL_PER_MINGGU.value * jumlahMingguBayar.value;
+  console.log("mulai logic store all week");
 
-  const konfirmasi = confirm(
-    `Bayar untuk ${
-      jumlahMingguBayar.value
-    } minggu dengan total Rp ${totalNominal.toLocaleString("id-ID")}?`
-  );
-
-  if (!konfirmasi) return;
-
-  // Create setoran untuk setiap minggu
   const setoranBaru: Setoran[] = [];
   const startMinggu = mingguKeNumber.value;
-  const setoranList = ref<Setoran[]>([]); // state utama
 
   for (let i = 0; i < jumlahMingguBayar.value; i++) {
     const mingguTarget = startMinggu + i;
 
-    // Skip jika minggu sudah melebihi total semester
     if (mingguTarget > TOTAL_MINGGU_SEMESTER) break;
+
+    // cek apakah sudah pernah bayar minggu ini
+    const sudahBayar = setoran.value.some(
+      (s) => s.anggotaId === selectedAnggota.value && s.minggu === mingguTarget
+    );
+    if (sudahBayar) {
+      console.log(`Minggu ${mingguTarget} sudah dibayar, skip`);
+
+      continue;
+    }
 
     const newSetoran: Setoran = {
       id: `${Date.now()}_${i}`,
@@ -315,20 +317,12 @@ const simpanSetoranFullAll = () => {
       tanggal: new Date(tanggalSetoran.value),
       jenis: "full",
     };
-    // Check if already paid for this week
-    const sudahBayar = setoranList.value.some(
-      (s) => s.anggotaId === selectedAnggota.value && s.minggu === mingguTarget
-    );
 
-    if (sudahBayar) {
-      console.log(`Minggu ${mingguTarget} sudah dibayar, skip`);
-      continue;
-    }
-
-    setoranList.value.push(newSetoran);
+    setoranBaru.push(newSetoran);
   }
 
   if (setoranBaru.length === 0) {
+    console.log("Semua minggu yang dipilih sudah dibayar");
     alert("Semua minggu yang dipilih sudah dibayar");
     return;
   }
@@ -504,10 +498,6 @@ const refreshData = async () => {
                 "
               >
                 {{ anggotaBelumSetor.length }} anggota belum setor
-              </p>
-              <p class="text-xs md:text-sm text-blue-600">
-                {{ Array.from(anggotaSudahBayarFull).length }} anggota sudah
-                bayar full
               </p>
             </div>
           </div>
