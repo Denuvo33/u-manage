@@ -358,41 +358,19 @@ watch(
   },
   { immediate: true }
 );
-
-const refreshData = async () => {
-  console.log("Refreshing data...");
-  await loadData();
-};
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <!-- Debug info (toggle v-if="true" untuk debugging) -->
-    <div v-if="false" class="bg-gray-100 p-4 rounded text-sm">
-      <h4>Debug Info:</h4>
-      <p>Loading: {{ isLoading }}</p>
-      <p>Anggota count: {{ anggota.length }}</p>
-      <p>Setoran count: {{ setoran.length }}</p>
-      <p>Can add setoran: {{ canAddSetoran }}</p>
-      <p>mingguKe: {{ mingguKe }}</p>
-      <p>mingguKeNumber: {{ mingguKeNumber }}</p>
-      <p>tanggalSetoran: {{ tanggalSetoran }}</p>
-      <p>
-        Anggota sudah bayar full: {{ Array.from(anggotaSudahBayarFull).length }}
-      </p>
-      <button
-        @click="refreshData"
-        class="bg-blue-500 text-white px-2 py-1 rounded"
-      >
-        Refresh Data
-      </button>
-    </div>
-
+  <div class="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">Setoran Mingguan</h1>
-        <p class="text-muted-foreground">
+    <div
+      class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-start"
+    >
+      <div class="min-w-0 flex-1">
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight truncate">
+          Setoran Mingguan
+        </h1>
+        <p class="text-sm sm:text-base text-muted-foreground mt-1">
           Kelola setoran anggota per minggu (Total:
           {{ TOTAL_MINGGU_SEMESTER }} minggu)
         </p>
@@ -400,6 +378,7 @@ const refreshData = async () => {
       <Button
         @click="openTambahSetoran"
         :disabled="!canAddSetoran || isLoading"
+        class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-4 flex-shrink-0"
       >
         <Plus class="h-4 w-4 mr-2" />
         Tambah Setoran
@@ -412,7 +391,7 @@ const refreshData = async () => {
     </div>
 
     <!-- No members warning -->
-    <Card v-if="!isLoading && anggota.length === 0">
+    <Card v-if="!isLoading && anggota.length === 0" class="w-full">
       <CardContent class="pt-6">
         <div class="text-center py-8">
           <p class="text-muted-foreground mb-4">
@@ -427,20 +406,20 @@ const refreshData = async () => {
 
     <template v-if="!isLoading && anggota.length > 0">
       <!-- Minggu Selection -->
-      <Card>
+      <Card class="w-full">
         <CardHeader>
-          <CardTitle>Pilih Minggu</CardTitle>
-          <CardDescription>
+          <CardTitle class="text-lg sm:text-xl">Pilih Minggu</CardTitle>
+          <CardDescription class="text-sm">
             Pilih minggu keberapa untuk melihat atau menambah setoran (1 -
             {{ TOTAL_MINGGU_SEMESTER }})
           </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <div class="flex flex-col sm:flex-row gap-4">
-            <div class="flex-1">
-              <Label for="minggu">Minggu Ke-</Label>
-              <Select v-model="mingguKe">
-                <SelectTrigger>
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <div class="flex-1 min-w-0">
+              <Label for="minggu" class="text-sm font-medium">Minggu Ke-</Label>
+              <Select v-model="mingguKe" class="w-full">
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Pilih minggu" />
                 </SelectTrigger>
                 <SelectContent>
@@ -455,11 +434,11 @@ const refreshData = async () => {
               </Select>
             </div>
 
-            <div class="flex-1">
-              <Label>Tanggal Setoran</Label>
+            <div class="flex-1 min-w-0">
+              <Label class="text-sm font-medium">Tanggal Setoran</Label>
               <Input
                 type="date"
-                class="w-8/12 md:w-10/12"
+                class="w-full"
                 v-model="tanggalSetoran"
                 :max="new Date().toISOString().split('T')[0]"
               />
@@ -467,22 +446,22 @@ const refreshData = async () => {
           </div>
 
           <div
-            class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4"
+            class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center pt-4 border-t"
           >
-            <div>
-              <h3 class="text-base md:text-lg font-semibold">
+            <div class="min-w-0">
+              <h3 class="text-base sm:text-lg font-semibold">
                 Total Setoran Minggu Ini
               </h3>
-              <p class="text-xl md:text-2xl font-bold text-green-600">
+              <p class="text-xl sm:text-2xl font-bold text-green-600">
                 Rp {{ totalSetoranMingguIni.toLocaleString("id-ID") }}
               </p>
             </div>
-            <div class="text-left sm:text-right">
-              <p class="text-xs md:text-sm text-muted-foreground">
+            <div class="text-left sm:text-right flex-shrink-0">
+              <p class="text-xs sm:text-sm text-muted-foreground">
                 {{ setoranMingguIni.length }} dari {{ anggota.length }} anggota
               </p>
               <p
-                class="text-xs md:text-sm"
+                class="text-xs sm:text-sm"
                 :class="
                   anggotaBelumSetor.length > 0
                     ? 'text-amber-600'
@@ -497,56 +476,57 @@ const refreshData = async () => {
       </Card>
 
       <!-- Form Tambah Setoran -->
-      <Card v-if="showForm">
+      <Card v-if="showForm" class="w-full">
         <CardHeader>
-          <CardTitle>Tambah Setoran</CardTitle>
-          <CardDescription>
+          <CardTitle class="text-lg sm:text-xl">Tambah Setoran</CardTitle>
+          <CardDescription class="text-sm">
             Tambahkan setoran untuk minggu ke-{{ mingguKeNumber }}
           </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <div class="grid gap-4 md:grid-cols-2">
-            <div class="space-y-2">
-              <Label for="anggota">Anggota</Label>
-              <Select v-model="selectedAnggota">
-                <SelectTrigger>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-2 min-w-0">
+              <Label for="anggota" class="text-sm font-medium">Anggota</Label>
+              <Select v-model="selectedAnggota" class="w-full">
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Pilih anggota" />
                 </SelectTrigger>
                 <SelectContent>
-                  <!-- Show all anggota, bukan hanya yang belum setor minggu ini -->
                   <SelectItem
                     v-for="person in anggota"
                     :key="person.id"
                     :value="person.id"
                   >
-                    {{ person.nama }}
-                    <span
-                      v-if="anggotaSudahBayarFull.has(person.id)"
-                      class="text-green-600 text-xs ml-2"
-                    >
-                      (Full Paid)
-                    </span>
-                    <span
-                      v-else-if="anggotaSudahBayarMingguIni.has(person.id)"
-                      class="text-amber-600 text-xs ml-2"
-                    >
-                      (Paid This Week)
-                    </span>
+                    <div class="flex items-center justify-between w-full">
+                      <span class="truncate">{{ person.nama }}</span>
+                      <span
+                        v-if="anggotaSudahBayarFull.has(person.id)"
+                        class="text-green-600 text-xs ml-2 flex-shrink-0"
+                      >
+                        (Full)
+                      </span>
+                      <span
+                        v-else-if="anggotaSudahBayarMingguIni.has(person.id)"
+                        class="text-amber-600 text-xs ml-2 flex-shrink-0"
+                      >
+                        (Paid)
+                      </span>
+                    </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div class="space-y-2">
-              <Label for="jenis">Jenis Setoran</Label>
-              <Select v-model="jenisSetoran">
-                <SelectTrigger>
+            <div class="space-y-2 min-w-0">
+              <Label for="jenis" class="text-sm font-medium"
+                >Jenis Setoran</Label
+              >
+              <Select v-model="jenisSetoran" class="w-full">
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Pilih jenis setoran" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full"
-                    >Setoran Penuh (Minggu Ini)</SelectItem
-                  >
+                  <SelectItem value="full">Setoran Penuh</SelectItem>
                   <SelectItem value="partial">Setoran Sebagian</SelectItem>
                   <SelectItem value="full_all">Bayar Multi-Minggu</SelectItem>
                 </SelectContent>
@@ -556,23 +536,29 @@ const refreshData = async () => {
 
           <!-- Input nominal untuk partial -->
           <div class="space-y-2" v-if="jenisSetoran === 'partial'">
-            <Label for="nominal">Nominal Setoran</Label>
+            <Label for="nominal" class="text-sm font-medium"
+              >Nominal Setoran</Label
+            >
             <Input
               type="number"
               placeholder="Masukkan nominal setoran"
               v-model.number="nominalSetoran"
+              class="w-full"
             />
           </div>
 
           <!-- Input jumlah minggu untuk full_all -->
           <div class="space-y-2" v-if="jenisSetoran === 'full_all'">
-            <Label for="jumlahMinggu">Bayar Untuk Berapa Minggu?</Label>
+            <Label for="jumlahMinggu" class="text-sm font-medium"
+              >Bayar Untuk Berapa Minggu?</Label
+            >
             <Input
               id="jumlahMinggu"
               type="number"
               :min="1"
               :max="TOTAL_MINGGU_SEMESTER - mingguKeNumber + 1"
               v-model="jumlahMingguBayar"
+              class="w-full"
             />
 
             <p class="text-sm text-gray-600">
@@ -584,34 +570,53 @@ const refreshData = async () => {
                 )
               }}
             </p>
-            <Label>Harga bayar per minggu</Label>
+            <Label class="text-sm font-medium">Harga bayar per minggu</Label>
             <Input
               type="number"
               :min="1"
               @input="hitungNominal"
               v-model="NOMINAL_PER_MINGGU"
+              class="w-full"
             />
           </div>
 
           <!-- Info nominal -->
-          <div class="text-sm text-gray-600">
+          <div class="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
             <div v-if="jenisSetoran === 'full'">
               Nominal setoran penuh: Rp
               {{ NOMINAL_PER_MINGGU.toLocaleString("id-ID") }}
             </div>
             <div v-if="jenisSetoran === 'full_all'">
-              Total nominal: Rp
-              {{
-                (NOMINAL_PER_MINGGU * jumlahMingguBayar).toLocaleString("id-ID")
-              }}
-              ({{ jumlahMingguBayar }} minggu × Rp
-              {{ NOMINAL_PER_MINGGU.toLocaleString("id-ID") }})
+              <div>
+                Total nominal: Rp
+                {{
+                  (NOMINAL_PER_MINGGU * jumlahMingguBayar).toLocaleString(
+                    "id-ID"
+                  )
+                }}
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                {{ jumlahMingguBayar }} minggu × Rp
+                {{ NOMINAL_PER_MINGGU.toLocaleString("id-ID") }}
+              </div>
             </div>
           </div>
 
-          <div class="flex justify-end space-x-2">
-            <Button variant="outline" @click="showForm = false">Batal</Button>
-            <Button @click="simpanSetoran" :disabled="!selectedAnggota">
+          <div
+            class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:space-x-2 pt-4 border-t"
+          >
+            <Button
+              variant="outline"
+              @click="showForm = false"
+              class="w-full sm:w-auto"
+            >
+              Batal
+            </Button>
+            <Button
+              @click="simpanSetoran"
+              :disabled="!selectedAnggota"
+              class="w-full sm:w-auto"
+            >
               <Save class="h-4 w-4 mr-2" />
               Simpan
             </Button>
@@ -620,62 +625,52 @@ const refreshData = async () => {
       </Card>
 
       <!-- Daftar Setoran Minggu Ini -->
-      <Card>
+      <Card class="w-full">
         <CardHeader>
-          <CardTitle>Setoran Minggu Ke-{{ mingguKeNumber }}</CardTitle>
-          <CardDescription
-            >Daftar setoran anggota untuk minggu ini</CardDescription
+          <CardTitle class="text-lg sm:text-xl"
+            >Setoran Minggu Ke-{{ mingguKeNumber }}</CardTitle
           >
+          <CardDescription class="text-sm">
+            Daftar setoran anggota untuk minggu ini
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Anggota</TableHead>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Jenis</TableHead>
-                <TableHead>Nominal</TableHead>
-                <TableHead class="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow v-for="item in setoranMingguIni" :key="item.id">
-                <TableCell class="font-medium">
-                  {{
-                    anggota.find((a) => a.id === item.anggotaId)?.nama ||
-                    "Unknown"
-                  }}
-                </TableCell>
-                <TableCell>{{
-                  format(new Date(item.tanggal), "dd MMM yyyy", { locale: id })
-                }}</TableCell>
-                <TableCell>
-                  <span
-                    :class="
-                      item.jenis === 'full'
-                        ? 'text-blue-600'
-                        : item.jenis === 'partial'
-                        ? 'text-amber-600'
-                        : 'text-green-600'
-                    "
-                  >
-                    {{
-                      item.jenis === "full"
-                        ? "Penuh"
-                        : item.jenis === "partial"
-                        ? "Sebagian"
-                        : "Lunas"
-                    }}
-                  </span>
-                </TableCell>
-                <TableCell
-                  >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
-                >
-                <TableCell class="text-right">
+        <CardContent class="p-0 sm:p-6">
+          <!-- Mobile View -->
+          <div class="block sm:hidden">
+            <div
+              v-if="setoranMingguIni.length === 0"
+              class="text-center py-8 text-muted-foreground px-6"
+            >
+              Belum ada setoran untuk minggu ke-{{ mingguKeNumber }}
+            </div>
+            <div v-else class="divide-y divide-gray-200">
+              <div
+                v-for="item in setoranMingguIni"
+                :key="item.id"
+                class="p-4 space-y-2"
+              >
+                <div class="flex justify-between items-start">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="font-medium truncate">
+                      {{
+                        anggota.find((a) => a.id === item.anggotaId)?.nama ||
+                        "Unknown"
+                      }}
+                    </h4>
+                    <p class="text-sm text-gray-500">
+                      {{
+                        format(new Date(item.tanggal), "dd MMM yyyy", {
+                          locale: id,
+                        })
+                      }}
+                    </p>
+                  </div>
                   <AlertDialog>
                     <AlertDialogTrigger
-                      ><Trash2 class="h-6 w-6"></Trash2
-                    ></AlertDialogTrigger>
+                      class="p-2 text-red-500 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle
@@ -687,34 +682,136 @@ const refreshData = async () => {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction @click="hapusSetoran(item.id)"
-                          >Continue</AlertDialogAction
-                        >
+                        <AlertDialogAction @click="hapusSetoran(item.id)">
+                          Continue
+                        </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </TableCell>
-              </TableRow>
-              <TableRow v-if="setoranMingguIni.length === 0">
-                <TableCell
-                  colspan="5"
-                  class="text-center py-4 text-muted-foreground"
-                >
-                  Belum ada setoran untuk minggu ke-{{ mingguKeNumber }}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span
+                    :class="
+                      item.jenis === 'full'
+                        ? 'text-blue-600 bg-blue-50'
+                        : item.jenis === 'partial'
+                        ? 'text-amber-600 bg-amber-50'
+                        : 'text-green-600 bg-green-50'
+                    "
+                    class="px-2 py-1 rounded-full text-xs font-medium"
+                  >
+                    {{
+                      item.jenis === "full"
+                        ? "Penuh"
+                        : item.jenis === "partial"
+                        ? "Sebagian"
+                        : "Lunas"
+                    }}
+                  </span>
+                  <span class="font-semibold text-green-600">
+                    Rp {{ item.nominal.toLocaleString("id-ID") }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop View -->
+          <div class="hidden sm:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead class="min-w-[120px]">Nama Anggota</TableHead>
+                  <TableHead class="min-w-[100px]">Tanggal</TableHead>
+                  <TableHead class="min-w-[80px]">Jenis</TableHead>
+                  <TableHead class="min-w-[100px]">Nominal</TableHead>
+                  <TableHead class="text-right min-w-[60px]">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="item in setoranMingguIni" :key="item.id">
+                  <TableCell class="font-medium">
+                    {{
+                      anggota.find((a) => a.id === item.anggotaId)?.nama ||
+                      "Unknown"
+                    }}
+                  </TableCell>
+                  <TableCell>
+                    {{
+                      format(new Date(item.tanggal), "dd MMM yyyy", {
+                        locale: id,
+                      })
+                    }}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      :class="
+                        item.jenis === 'full'
+                          ? 'text-blue-600'
+                          : item.jenis === 'partial'
+                          ? 'text-amber-600'
+                          : 'text-green-600'
+                      "
+                    >
+                      {{
+                        item.jenis === "full"
+                          ? "Penuh"
+                          : item.jenis === "partial"
+                          ? "Sebagian"
+                          : "Lunas"
+                      }}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
+                  >
+                  <TableCell class="text-right">
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Trash2
+                          class="h-4 w-4 text-red-500 hover:text-red-700"
+                        />
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle
+                            >Apakah yakin ingin menghapusnya?</AlertDialogTitle
+                          >
+                          <AlertDialogDescription>
+                            Setoran Anggota ini akan dihapus secara permanen.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction @click="hapusSetoran(item.id)">
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-if="setoranMingguIni.length === 0">
+                  <TableCell
+                    colspan="5"
+                    class="text-center py-4 text-muted-foreground"
+                  >
+                    Belum ada setoran untuk minggu ke-{{ mingguKeNumber }}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       <!-- Daftar Anggota Belum Setor -->
-      <Card v-if="anggotaBelumSetor.length > 0">
+      <Card v-if="anggotaBelumSetor.length > 0" class="w-full">
         <CardHeader>
-          <CardTitle
-            >Anggota Belum Setor Minggu Ke-{{ mingguKeNumber }}</CardTitle
-          >
-          <CardDescription>
+          <CardTitle class="text-lg sm:text-xl">
+            Anggota Belum Setor Minggu Ke-{{ mingguKeNumber }}
+          </CardTitle>
+          <CardDescription class="text-sm">
             Anggota yang belum melakukan setoran untuk minggu ini
           </CardDescription>
         </CardHeader>
@@ -723,7 +820,7 @@ const refreshData = async () => {
             <div
               v-for="person in anggotaBelumSetor"
               :key="person.id"
-              class="px-3 py-2 bg-amber-100 text-amber-800 rounded-lg"
+              class="px-3 py-2 bg-amber-100 text-amber-800 rounded-lg text-sm break-words"
             >
               {{ person.nama }}
             </div>
