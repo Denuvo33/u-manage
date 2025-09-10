@@ -1,4 +1,4 @@
-// types/index.ts
+
 export interface Anggota {
   id: string;
   nama: string;
@@ -9,12 +9,12 @@ export interface Anggota {
 export interface Setoran {
   id: string;
   anggotaId: string;
-  minggu: number;
+  minggu: number; 
   nominal: number;
   tanggal: Date;
-  jenis: 'full' | 'partial' | 'full_all';
-   groupId?: string;
-   
+  jenis: 'full' | 'partial' | 'full_all' | 'deposit'; 
+  groupId?: string;
+  deskripsi?: string;
 }
 
 export interface Pengeluaran {
@@ -22,7 +22,7 @@ export interface Pengeluaran {
   tanggal: Date;
   deskripsi: string;
   nominal: number;
-   bukti?: string;
+  bukti?: string;
 }
 
 export interface AppState {
