@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Save, Trash2 } from "lucide-vue-next";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -49,6 +49,7 @@ const setoran = ref<Setoran[]>([]);
 const mingguKe = ref<string>("1");
 const tanggalSetoran = ref<string>("");
 const showForm = ref(false);
+const hapusSetoranOption = ref<"week" | "all-week">("week");
 
 // Form state
 const selectedAnggota = ref<string>("");
@@ -323,8 +324,7 @@ const hapusSetoran = (id: string) => {
   const target = setoran.value.find((s) => s.id === id);
 
   if (!target) return;
-
-  if (target.groupId) {
+  if (hapusSetoranOption.value === "all-week" && target.groupId) {
     setoran.value = setoran.value.filter((s) => s.groupId !== target.groupId);
   } else {
     setoran.value = setoran.value.filter((s) => s.id !== id);
@@ -342,6 +342,16 @@ watch(jenisSetoran, (newJenis) => {
     nominalSetoran.value = 0;
   }
 });
+
+const fetchAllWekkForFullAll = (anggotaId: string) => {
+  if (!anggotaId) return 0;
+
+  const setoranFullAll = setoran.value.filter(
+    (s) => s.anggotaId === anggotaId && s.jenis === "full_all"
+  );
+
+  return setoranFullAll.length;
+};
 
 // Watch jumlahMingguBayar change
 watch(jumlahMingguBayar, (newJumlah) => {
@@ -674,10 +684,29 @@ watch(
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle
-                          >Apakah yakin ingin menghapusnya?</AlertDialogTitle
+                          >Apakah yakin ingin menghapusnya??</AlertDialogTitle
                         >
                         <AlertDialogDescription>
-                          Setoran Anggota ini akan dihapus secara permanen.
+                          <div>
+                            Setoran Anggota ini akan dihapus secara permanen.
+                            <RadioGroup
+                              default-value="week"
+                              v-model="hapusSetoranOption"
+                            >
+                              <div class="flex items-center space-x-2">
+                                <RadioGroupItem id="r1" value="week" />
+                                <Label for="r1">Minggu Ini</Label>
+                              </div>
+                              <div class="flex items-center space-x-2">
+                                <RadioGroupItem id="r2" value="all-week" />
+                                <Label for="r2"
+                                  >Semua Minggu (Hanya utk jenis lunas atau
+                                  {{ fetchAllWekkForFullAll(item.anggotaId) }}
+                                  minggu)
+                                </Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -778,7 +807,26 @@ watch(
                             >Apakah yakin ingin menghapusnya?</AlertDialogTitle
                           >
                           <AlertDialogDescription>
-                            Setoran Anggota ini akan dihapus secara permanen.
+                            <div>
+                              Setoran Anggota ini akan dihapus secara permanen.
+                              <RadioGroup
+                                default-value="week"
+                                v-model="hapusSetoranOption"
+                              >
+                                <div class="flex items-center space-x-2">
+                                  <RadioGroupItem id="r1" value="week" />
+                                  <Label for="r1">Minggu Ini</Label>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                  <RadioGroupItem id="r2" value="all-week" />
+                                  <Label for="r2"
+                                    >Semua Minggu (Hanya utk jenis lunas atau
+                                    {{ fetchAllWekkForFullAll(item.anggotaId) }}
+                                    minggu)
+                                  </Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
