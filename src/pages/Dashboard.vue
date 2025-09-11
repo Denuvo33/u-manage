@@ -1,9 +1,8 @@
 // pages/DashboardPage.vue
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { Toaster } from "@/components/ui/sonner";
 import "vue-sonner/style.css";
-import { Clock } from "lucide-vue-next";
 
 // Components
 import DashboardHeader from "@/components/dashboard/DashboardHeader.vue";
@@ -21,7 +20,7 @@ import { useDataImportExport } from "@/composables/useDataImportExport";
 // Use composables
 const {
   anggota,
-  setoran,
+  // setoran,
   pengeluaran,
   maksSetoranMingguan,
   maksSetoranOrang,

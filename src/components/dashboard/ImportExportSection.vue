@@ -8,6 +8,17 @@ import {
   FileJson,
   FileSpreadsheet,
 } from "lucide-vue-next";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const emit = defineEmits<{
   exportData: [];
@@ -24,9 +35,31 @@ const emit = defineEmits<{
       Import & Export Data
     </h2>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <Button @click="emit('importData')" class="gap-2 text-sm">
-        <FileJson class="w-4 h-4" /> Import JSON
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger>
+          <Button class="w-full">
+            <FileJson class="w-4 h-4" /> Import JSON
+          </Button></AlertDialogTrigger
+        >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle
+              >Pilih file JSON untuk di import.</AlertDialogTitle
+            >
+            <AlertDialogDescription>
+              Total setoran Anggota yg lama akan ditimpa jika total setoran yang
+              baru lebih besar, jadi perhatikan kembali.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction @click="emit('importData')"
+              >Continue</AlertDialogAction
+            >
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Button @click="emit('exportData')" class="gap-2 text-sm">
         <FileJson class="w-4 h-4" /> Export JSON
       </Button>

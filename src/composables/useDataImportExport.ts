@@ -150,8 +150,13 @@ export const useDataImportExport = () => {
   const mergeById = (existing: any[], incoming: any[]) => {
     const map = new Map(existing.map((item) => [item.id, item]));
     incoming.forEach((item) => {
+     
       if (!map.has(item.id)) {
         map.set(item.id, item);
+      }else{
+           if(item.totalSetoran > map.get(item.id)?.totalSetoran  ) {
+          map.set(item.id, item);
+        }
       }
     });
     return Array.from(map.values());
