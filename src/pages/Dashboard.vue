@@ -46,6 +46,10 @@ const currentDate = computed(() => {
   });
 });
 
+const handleExportData = (image: boolean) => {
+  exportData(image);
+};
+
 onMounted(() => {
   loadData();
 });
@@ -61,7 +65,7 @@ onMounted(() => {
 
     <!-- Import/Export Section -->
     <ImportExportSection
-      @export-data="exportData"
+      @export-data="handleExportData"
       @import-data="importData"
       @export-csv="exportCsv"
       @import-csv="importCsv"

@@ -1,21 +1,39 @@
 import { toast } from "vue-sonner";
 
 export const useDataImportExport = () => {
-  const exportData = () => {
-    const data = {
-      anggota: JSON.parse(localStorage.getItem("anggota") || "[]"),
-      setoran: JSON.parse(localStorage.getItem("setoran") || "[]"),
-      pengeluaran: JSON.parse(localStorage.getItem("pengeluaran") || "[]"),
-    };
+const exportData = (includeImage: boolean = false) => {
+  const anggotaData = JSON.parse(localStorage.getItem("anggota") || "[]");
+  const setoranData = JSON.parse(localStorage.getItem("setoran") || "[]");
+  let pengeluaranData = JSON.parse(localStorage.getItem("pengeluaran") || "[]");
+  
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
+  if (!includeImage) {
+    pengeluaranData = pengeluaranData.map((item: any) => {
+      const { bukti, ...itemWithoutBukti } = item;
+      return itemWithoutBukti;
     });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "u-kelola-data.json";
-    link.click();
+  }
+  
+  const data = {
+    anggota: anggotaData,
+    setoran: setoranData,
+    pengeluaran: pengeluaranData,
   };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  const timestamp = new Date().toISOString().split('T')[0];
+  const imageStatus = includeImage ? 'with-images' : 'no-images';
+  link.download = `u-kelola-data-${imageStatus}-${timestamp}.json`;
+  link.click();
+  
+
+  URL.revokeObjectURL(link.href);
+};
 
   const importData = () => {
     const input = document.createElement("input");

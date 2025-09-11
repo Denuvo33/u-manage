@@ -19,13 +19,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ref } from "vue";
+
+const image = ref(false);
 
 const emit = defineEmits<{
-  exportData: [];
+  exportData: [image: boolean];
   importData: [];
   exportCsv: [];
   importCsv: [];
 }>();
+
+const handleExportData = () => emit("exportData", image.value);
 </script>
 
 <template>
@@ -60,9 +67,36 @@ const emit = defineEmits<{
         </AlertDialogContent>
       </AlertDialog>
 
-      <Button @click="emit('exportData')" class="gap-2 text-sm">
-        <FileJson class="w-4 h-4" /> Export JSON
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger>
+          <Button class="gap-2 text-sm w-full">
+            <FileJson class="w-4 h-4" /> Export JSON
+          </Button></AlertDialogTrigger
+        >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Export data sebagai JSON.</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div class="space-y-2">
+                <div class="flex gap-1">
+                  <Checkbox v-model="image" />
+                  <Label
+                    >Export Image dri pengeluaran?(Ukuran file dapat menjadi
+                    besar)</Label
+                  >
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction @click="handleExportData"
+              >Continue</AlertDialogAction
+            >
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Button @click="emit('importCsv')" class="gap-2 text-sm">
         <FileDown class="w-4 h-4" /> Import CSV
       </Button>
