@@ -58,7 +58,7 @@ onMounted(() => {
 <template>
   <Toaster position="top-right" />
   <div
-    class="p-4 lg:p-6 space-y-4 lg:space-y-6 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+    class="p-4 lg:p-6 space-y-4 lg:space-y-6 w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
   >
     <!-- Header Section -->
     <DashboardHeader :current-date="currentDate" />

@@ -10,8 +10,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
       class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
     >
       <AppSidebar />
-      <main>
-        <SidebarTrigger />
+      <main class="w-full">
+        <SidebarTrigger class="md:hidden" />
         <router-view />
       </main>
     </SidebarProvider>

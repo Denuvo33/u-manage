@@ -9,7 +9,7 @@ defineProps<Props>();
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border p-4 lg:p-6">
+  <div class="bg-white rounded-xl shadow-sm border w-full p-4 lg:p-6">
     <div
       class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-2 lg:space-y-0"
     >
