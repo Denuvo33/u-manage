@@ -1,411 +1,148 @@
-<!-- pages/PengeluaranPage.vue -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Trash2, Edit, Plus } from "lucide-vue-next";
+import PengeluaranHeader from "@/components/pengeluaran/PengeluaranHeader.vue";
+import PengeluaranStats from "@/components/pengeluaran/PengeluaranStats.vue";
+import PengeluaranFilters from "@/components/pengeluaran/PengeluaranFilters.vue";
+import PengeluaranForm from "@/components/pengeluaran/PengeluaranForm.vue";
+import PengeluaranList from "@/components/pengeluaran/PengeluaranList.vue";
+import JenisDialog from "@/components/pengeluaran/JenisDialog.vue";
+import FilterDialog from "@/components/pengeluaran/FilterDialog.vue";
 
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import type { Pengeluaran } from "@/types";
+import { useJenisPengeluaran } from "@/composables/useJenisPengeluaran";
+import { usePengeluaranData } from "@/composables/usePengeluaranData";
+import { usePengeluaranFilters } from "@/composables/usePengeluaranFilters";
 
-// Data state
-const pengeluaran = ref<Pengeluaran[]>([]);
-const showForm = ref(false);
+// Composables
+const { loadJenisPengeluaran, getJenisById, sortedJenis } =
+  useJenisPengeluaran();
+const {
+  pengeluaran,
+  showForm,
+  editId,
+  loadPengeluaran,
+  savePengeluaran,
+  deletePengeluaran,
+  openForm,
+  closeForm,
+} = usePengeluaranData();
 
-// Form state
-const tanggalPengeluaran = ref<string>(new Date().toISOString().split("T")[0]);
-const deskripsiPengeluaran = ref<string>("");
-const nominalPengeluaran = ref<number>(0);
-const editId = ref<string | null>(null);
-const buktiFile = ref<File | null>(null);
+const {
+  filters,
+  filteredPengeluaran,
+  hasActiveFilter,
+  activeFilterCount,
+  clearAllFilters,
+  clearFilter,
+} = usePengeluaranFilters(pengeluaran);
 
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    buktiFile.value = target.files[0];
-  }
-};
+// Dialog states
+const showJenisDialog = ref(false);
 
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
-};
-
-// Computed properties
+// Computed
 const totalPengeluaran = computed(() => {
-  return pengeluaran.value.reduce((sum, p) => sum + p.nominal, 0);
-});
-
-const pengeluaranTerbaru = computed(() => {
-  return [...pengeluaran.value].sort(
-    (a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
+  return filteredPengeluaran.value.reduce(
+    (sum: number, p: Pengeluaran) => sum + p.nominal,
+    0
   );
 });
 
-// Load data from localStorage
-onMounted(() => {
-  const savedPengeluaran = localStorage.getItem("pengeluaran");
-  if (savedPengeluaran) pengeluaran.value = JSON.parse(savedPengeluaran);
+const totalPengeluaranSemua = computed(() => {
+  return pengeluaran.value.reduce(
+    (sum: number, p: Pengeluaran) => sum + p.nominal,
+    0
+  );
 });
 
-// Save data to localStorage
-const saveToLocalStorage = () => {
-  localStorage.setItem("pengeluaran", JSON.stringify(pengeluaran.value));
+// Load data on mount
+onMounted(() => {
+  loadJenisPengeluaran();
+  loadPengeluaran();
+});
+
+// Event handlers
+const handleTambahPengeluaran = () => {
+  openForm();
 };
 
-// Handle form operations
-const openTambahPengeluaran = () => {
-  tanggalPengeluaran.value = new Date().toISOString().split("T")[0];
-  deskripsiPengeluaran.value = "";
-  nominalPengeluaran.value = 0;
-  showForm.value = true;
+const handleEditPengeluaran = (item: Pengeluaran) => {
+  openForm(item);
 };
 
-const openEditPengeluaran = (item: Pengeluaran) => {
-  tanggalPengeluaran.value = new Date(item.tanggal).toISOString().split("T")[0];
-  deskripsiPengeluaran.value = item.deskripsi;
-  nominalPengeluaran.value = item.nominal;
-  editId.value = item.id; // simpan id yg mau di edit
-  showForm.value = true;
+const handleSavePengeluaran = async (data: any) => {
+  await savePengeluaran(data);
+  closeForm();
 };
 
-const simpanPengeluaran = async () => {
-  if (!deskripsiPengeluaran.value.trim() || nominalPengeluaran.value <= 0)
-    return;
-
-  let buktiBase64: string | undefined = undefined;
-  if (buktiFile.value) {
-    buktiBase64 = await fileToBase64(buktiFile.value);
-  }
-
-  if (editId.value) {
-    // mode edit
-    const index = pengeluaran.value.findIndex((p) => p.id === editId.value);
-    if (index !== -1) {
-      pengeluaran.value[index] = {
-        ...pengeluaran.value[index],
-        tanggal: new Date(tanggalPengeluaran.value),
-        deskripsi: deskripsiPengeluaran.value,
-        nominal: nominalPengeluaran.value,
-        bukti: buktiBase64 || pengeluaran.value[index].bukti,
-      };
-    }
-  } else {
-    // mode tambah
-    const pengeluaranBaru: Pengeluaran = {
-      id: Date.now().toString(),
-      tanggal: new Date(tanggalPengeluaran.value),
-      deskripsi: deskripsiPengeluaran.value,
-      nominal: nominalPengeluaran.value,
-      bukti: buktiBase64,
-    };
-    pengeluaran.value.push(pengeluaranBaru);
-  }
-
-  saveToLocalStorage();
-  showForm.value = false;
-  buktiFile.value = null;
-};
-
-const hapusPengeluaran = (id: string) => {
-  pengeluaran.value = pengeluaran.value.filter((p) => p.id !== id);
-  saveToLocalStorage();
+const handleDeletePengeluaran = (id: string) => {
+  deletePengeluaran(id);
 };
 </script>
 
 <template>
   <div class="p-6 space-y-6 max-w-full overflow-x-hidden">
     <!-- Header -->
-    <div class="flex flex-wrap gap-2 justify-between items-center">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">Pengeluaran</h1>
-        <p class="text-muted-foreground">Kelola pengeluaran kas</p>
-      </div>
-      <Button @click="openTambahPengeluaran">
-        <Plus class="h-4 w-4 mr-2" />
-        Tambah Pengeluaran
-      </Button>
-    </div>
+    <PengeluaranHeader
+      :show-jenis-dialog="showJenisDialog"
+      @tambah-pengeluaran="handleTambahPengeluaran"
+      @toggle-jenis-dialog="showJenisDialog = !showJenisDialog"
+    >
+      <template #filter-dialog>
+        <FilterDialog
+          :filters="filters"
+          :sorted-jenis="sortedJenis"
+          :get-jenis-by-id="getJenisById"
+          :active-filter-count="activeFilterCount"
+          @update:filters="filters = $event"
+          @clear-all-filters="clearAllFilters"
+        />
+      </template>
+    </PengeluaranHeader>
 
-    <!-- Statistik -->
-    <div class="grid gap-4 md:grid-cols-3">
-      <Card
-        class="bg-gradient-to-r shadow-lg from-red-400 hover:scale-[1.02] transition-transform duration-200 text-white to-red-600"
-      >
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
-          <CardTitle class="text-sm font-medium">Total Pengeluaran</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">
-            Rp {{ totalPengeluaran.toLocaleString("id-ID") }}
-          </div>
-          <p class="text-xs text-muted-foreground">Seluruh periode</p>
-        </CardContent>
-      </Card>
+    <!-- Active Filters Display -->
+    <PengeluaranFilters
+      v-if="hasActiveFilter"
+      :filters="filters"
+      :active-filter-count="activeFilterCount"
+      :get-jenis-by-id="getJenisById"
+      @clear-filter="clearFilter"
+      @clear-all-filters="clearAllFilters"
+    />
 
-      <Card
-        class="bg-gradient-to-r shadow-lg from-green-400 hover:scale-[1.02] transition-transform duration-200 text-white to-green-600"
-      >
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
-          <CardTitle class="text-sm font-medium">Jumlah Transaksi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">{{ pengeluaran.length }}</div>
-          <p class="text-xs text-muted-foreground">Catatan pengeluaran</p>
-        </CardContent>
-      </Card>
+    <!-- Statistics -->
+    <PengeluaranStats
+      :total-pengeluaran="totalPengeluaran"
+      :get-jenis-by-id="getJenisById"
+      :total-pengeluaran-semua="totalPengeluaranSemua"
+      :filtered-pengeluaran="filteredPengeluaran"
+      :pengeluaran="pengeluaran"
+      :has-active-filter="hasActiveFilter"
+      :filters="filters"
+    />
 
-      <Card
-        class="bg-gradient-to-r shadow-lg from-blue-400 hover:scale-[1.02] transition-transform duration-200 text-white to-blue-600"
-      >
-        <CardHeader
-          class="flex flex-row items-center justify-between space-y-0 pb-2"
-        >
-          <CardTitle class="text-sm font-medium">Rata-rata</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="text-2xl font-bold">
-            Rp
-            {{
-              (pengeluaran.length > 0
-                ? totalPengeluaran / pengeluaran.length
-                : 0
-              ).toLocaleString("id-ID")
-            }}
-          </div>
-          <p class="text-xs text-muted-foreground">Per transaksi</p>
-        </CardContent>
-      </Card>
-    </div>
+    <!-- Form -->
+    <PengeluaranForm
+      v-if="showForm"
+      :edit-id="editId"
+      @save="handleSavePengeluaran"
+      @cancel="closeForm"
+    />
 
-    <!-- Form Tambah/Edit Pengeluaran -->
-    <Card v-if="showForm">
-      <CardHeader>
-        <CardTitle>
-          {{ editId ? "Edit Pengeluaran" : "Tambah Pengeluaran" }}
-        </CardTitle>
-        <CardDescription>
-          {{ editId ? "Perbarui" : "Tambahkan" }} catatan pengeluaran kas
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <div class="grid gap-4 md:grid-cols-2">
-          <div class="space-y-2">
-            <Label for="tanggal">Tanggal Pengeluaran</Label>
-            <Input
-              id="tanggal"
-              type="date"
-              class="w-full"
-              v-model="tanggalPengeluaran"
-              :max="new Date().toISOString().split('T')[0]"
-            />
-          </div>
+    <!-- List -->
+    <PengeluaranList
+      :pengeluaran="filteredPengeluaran"
+      :total-count="pengeluaran.length"
+      :has-active-filter="hasActiveFilter"
+      :get-jenis-by-id="getJenisById"
+      @edit="handleEditPengeluaran"
+      @delete="handleDeletePengeluaran"
+    />
 
-          <div class="space-y-2">
-            <Label for="nominal">Nominal</Label>
-            <Input
-              id="nominal"
-              type="number"
-              class="w-full"
-              placeholder="Masukkan nominal pengeluaran"
-              v-model="nominalPengeluaran"
-            />
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <Label for="deskripsi">Deskripsi Pengeluaran</Label>
-          <Input
-            id="deskripsi"
-            type="text"
-            class="w-full"
-            placeholder="Contoh: Beli bahan masak, transportasi, dll."
-            v-model="deskripsiPengeluaran"
-          />
-        </div>
-        <div class="space-y-2">
-          <Label for="bukti">Bukti Struk (opsional)</Label>
-          <Input
-            id="bukti"
-            class="w-full"
-            type="file"
-            accept="image/*"
-            @change="handleFileChange"
-          />
-        </div>
-
-        <div class="flex justify-end space-x-2">
-          <Button variant="outline" @click="showForm = false">Batal</Button>
-          <Button
-            @click="simpanPengeluaran"
-            :disabled="!deskripsiPengeluaran.trim() || nominalPengeluaran <= 0"
-          >
-            <Save class="h-4 w-4 mr-2" />
-            {{ editId ? "Update" : "Simpan" }}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-
-    <!-- Daftar Pengeluaran -->
-    <Card class="max-h-120 overflow-y-auto">
-      <CardHeader>
-        <CardTitle>Histori Pengeluaran</CardTitle>
-        <CardDescription> Daftar seluruh pengeluaran kas</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <!-- Mobile View -->
-        <div class="block sm:hidden">
-          <div v-for="item in pengeluaranTerbaru" :key="item.id">
-            <hr>
-            <div class="flex items-center">
-              <div class="ml-4 space-y-1">
-                <img
-                  :src="item.bukti" class="w-16 h-auto"></img>
-                <p class="text-sm font-medium leading-none">
-                  {{ item.deskripsi }}
-                </p>
-                <p class="text-sm text-muted-foreground">
-                  {{ new Date(item.tanggal).toLocaleDateString("id-ID") }}
-                </p>
-              </div>
-              <div class="ml-auto font-medium text-destructive">
-                -Rp {{ item.nominal.toLocaleString("id-ID") }}
-              </div>
-                <AlertDialog>
-                  <AlertDialogTrigger><Trash2
-               
-                class="h-6 w-6"
-              ></Trash2></AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Pengeluaran ini akan dihapus secara permanen.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction  @click="hapusPengeluaran(item.id)">Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-            </div>
-          </div>
-        </div>
-        <!-- Desktop View -->
-        <div class="hidden sm:block overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Deskripsi</TableHead>
-                <TableHead>Nominal</TableHead>
-                <TableHead>Bukti</TableHead>
-
-                <TableHead class="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow v-for="item in pengeluaranTerbaru" :key="item.id">
-                <TableCell>{{
-                  format(new Date(item.tanggal), "dd MMM yyyy", { locale: id })
-                }}</TableCell>
-                <TableCell class="font-medium">{{ item.deskripsi }}</TableCell>
-                <TableCell class="text-destructive"
-                  >Rp {{ item.nominal.toLocaleString("id-ID") }}</TableCell
-                >
-                <TableCell>
-                  <img
-                    v-if="item.bukti"
-                    :src="item.bukti"
-                    alt="Bukti"
-                    class="h-16 w-auto rounded border"
-                  />
-                  <span v-else class="text-muted-foreground text-sm">-</span>
-                </TableCell>
-
-                <TableCell class="text-right flex gap-2 justify-end">
-                  <!-- Tombol Edit -->
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    @click="openEditPengeluaran(item)"
-                  >
-                    <Edit class="h-5 w-5" />
-                  </Button>
-
-                  <!-- Tombol Hapus -->
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      ><Trash2 class="h-6 w-6"
-                    /></AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Pengeluaran ini akan dihapus secara permanen.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction @click="hapusPengeluaran(item.id)"
-                          >Continue</AlertDialogAction
-                        >
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
-              <TableRow v-if="pengeluaran.length === 0">
-                <TableCell
-                  colspan="4"
-                  class="text-center py-4 text-muted-foreground"
-                >
-                  Belum ada catatan pengeluaran
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-        <div></div>
-      </CardContent>
-    </Card>
+    <!-- Jenis Dialog -->
+    <JenisDialog
+      v-model:open="showJenisDialog"
+      :pengeluaran="pengeluaran"
+      @update-pengeluaran="loadPengeluaran"
+    />
   </div>
 </template>

@@ -89,7 +89,7 @@ const navigateUrl = (url: string) => {
           </div>
 
           <SidebarMenu class="space-y-2">
-            <SidebarMenuItem v-for="(item, index) in items" :key="item.title">
+            <SidebarMenuItem v-for="item in items" :key="item.title">
               <SidebarMenuButton class="group relative w-full" asChild>
                 <RouterLink
                   :to="item.url"
