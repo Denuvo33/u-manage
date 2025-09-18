@@ -1,15 +1,10 @@
+// composables/useJenisPengeluaran.ts
 import { ref, computed } from "vue";
 import type { JenisPengeluaran } from "@/types";
-
 
 export const useJenisPengeluaran = () => {
   const jenisPengeluaran = ref<JenisPengeluaran[]>([]);
   
-  // Default jenis pengeluaran yang akan otomatis dibuat
-  const defaultJenis: Omit<JenisPengeluaran, 'id' | 'createdAt'>[] = [
-    { nama: "Umum", warna: "#6B7280", isDefault: true },
-  ];
-
   const colors = [
     "#EF4444", "#F97316", "#EAB308", "#22C55E", 
     "#06B6D4", "#3B82F6", "#8B5CF6", "#EC4899",
@@ -21,40 +16,32 @@ export const useJenisPengeluaran = () => {
     const saved = localStorage.getItem("jenisPengeluaran");
     if (saved) {
       jenisPengeluaran.value = JSON.parse(saved);
-      console.log('loaded jenisPengeluaran:', jenisPengeluaran.value);
     } else {
-      // Jika belum ada data, buat default
-      console.log("📝 Creating default jenis pengeluaran...");
-      initializeDefaultJenis();
+      // Buat default jenis "Umum"
+      const defaultJenis: JenisPengeluaran = {
+        id: "default-umum-" + Date.now(),
+        nama: "Umum",
+        warna: "#6B7280",
+        isDefault: true,
+        createdAt: new Date()
+      };
+      jenisPengeluaran.value = [defaultJenis];
+      saveJenisPengeluaran();
     }
   };
 
-  // Initialize default jenis pengeluaran
-  const initializeDefaultJenis = () => {
-    console.log("initializeDefaultJenis called");
-    const defaultData: JenisPengeluaran[] = defaultJenis.map(jenis => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      createdAt: new Date(),
-      ...jenis
-    }));
-    
-    jenisPengeluaran.value = defaultData;
-    saveJenisPengeluaran();
-  };
-
-  // Save data ke localStorage
+  // Save ke localStorage
   const saveJenisPengeluaran = () => {
     localStorage.setItem("jenisPengeluaran", JSON.stringify(jenisPengeluaran.value));
-    console.log('saved jenisPengeluaran:', jenisPengeluaran.value);
   };
 
-  // Tambah jenis pengeluaran baru
+  // Tambah jenis baru
   const tambahJenis = (nama: string, warna?: string) => {
-    const jenisExist = jenisPengeluaran.value.find(
+    // Cek duplikasi nama
+    const exists = jenisPengeluaran.value.find(
       j => j.nama.toLowerCase() === nama.toLowerCase()
     );
-    
-    if (jenisExist) {
+    if (exists) {
       throw new Error("Jenis pengeluaran sudah ada");
     }
 
@@ -71,7 +58,7 @@ export const useJenisPengeluaran = () => {
     return jeniBaru;
   };
 
-  // Edit jenis pengeluaran
+  // Edit jenis
   const editJenis = (id: string, nama: string, warna: string) => {
     const index = jenisPengeluaran.value.findIndex(j => j.id === id);
     if (index === -1) {
@@ -79,11 +66,10 @@ export const useJenisPengeluaran = () => {
     }
 
     // Cek duplikasi nama (kecuali untuk item yang sedang diedit)
-    const jenisExist = jenisPengeluaran.value.find(
+    const exists = jenisPengeluaran.value.find(
       j => j.nama.toLowerCase() === nama.toLowerCase() && j.id !== id
     );
-    
-    if (jenisExist) {
+    if (exists) {
       throw new Error("Jenis pengeluaran dengan nama tersebut sudah ada");
     }
 
@@ -96,7 +82,7 @@ export const useJenisPengeluaran = () => {
     saveJenisPengeluaran();
   };
 
-  // Hapus jenis pengeluaran (hanya yang bukan default)
+  // Hapus jenis (tidak bisa hapus yang default)
   const hapusJenis = (id: string) => {
     const jenis = jenisPengeluaran.value.find(j => j.id === id);
     if (jenis?.isDefault) {
@@ -109,25 +95,23 @@ export const useJenisPengeluaran = () => {
 
   // Get jenis by ID
   const getJenisById = (id: string) => {
-    console.log('getJenisById called', id, jenisPengeluaran.value);
     return jenisPengeluaran.value.find(j => j.id === id);
   };
 
-  // Get default jenis
+  // Get default jenis ID
   const defaultJenisId = computed(() => {
-    return jenisPengeluaran.value.find(j => j.isDefault)?.id || "";
+    return jenisPengeluaran.value.find(j => j.isDefault)?.id || 
+           jenisPengeluaran.value[0]?.id || "";
   });
 
-  // Sorted jenis (default first, then alphabetical)
- const sortedJenis = computed(() => {
-  console.log('mulai sorted: ', jenisPengeluaran.value);
-  return [...jenisPengeluaran.value].sort((a, b) => {
-    if (a.isDefault && !b.isDefault) return -1;
-    if (!a.isDefault && b.isDefault) return 1;
-    return a.nama.localeCompare(b.nama);
+  // Sorted jenis (default first)
+  const sortedJenis = computed(() => {
+    return [...jenisPengeluaran.value].sort((a, b) => {
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+      return a.nama.localeCompare(b.nama);
+    });
   });
-});
-
 
   return {
     jenisPengeluaran,

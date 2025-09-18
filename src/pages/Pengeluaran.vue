@@ -20,7 +20,9 @@ const {
   pengeluaran,
   showForm,
   editId,
+  editData,
   loadPengeluaran,
+  saveToLocalStorage,
   savePengeluaran,
   deletePengeluaran,
   openForm,
@@ -124,6 +126,7 @@ const handleDeletePengeluaran = (id: string) => {
     <PengeluaranForm
       v-if="showForm"
       :edit-id="editId"
+      :edit-data="editData!"
       @save="handleSavePengeluaran"
       @cancel="closeForm"
     />
@@ -142,7 +145,7 @@ const handleDeletePengeluaran = (id: string) => {
     <JenisDialog
       v-model:open="showJenisDialog"
       :pengeluaran="pengeluaran"
-      @update-pengeluaran="loadPengeluaran"
+      @update-pengeluaran="saveToLocalStorage"
     />
   </div>
 </template>

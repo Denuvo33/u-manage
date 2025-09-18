@@ -47,6 +47,7 @@ const buktiFile = ref<File | null>(null);
 // Initialize form
 const initializeForm = () => {
   if (props.editData) {
+    console.log("edit data", props.editData);
     tanggalPengeluaran.value = new Date(props.editData.tanggal)
       .toISOString()
       .split("T")[0];
@@ -55,6 +56,7 @@ const initializeForm = () => {
     jenisIdPengeluaran.value = props.editData.jenisId || defaultJenisId.value;
     buktiFile.value = null;
   } else {
+    console.log("new data");
     tanggalPengeluaran.value = new Date().toISOString().split("T")[0];
     deskripsiPengeluaran.value = "";
     nominalPengeluaran.value = 0;

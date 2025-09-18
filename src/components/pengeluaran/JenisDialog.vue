@@ -82,19 +82,19 @@ const simpanJenis = () => {
 };
 
 const confirmHapusJenis = (jenis: JenisPengeluaran) => {
-  const pengeluaranWithJenis = props.pengeluaran.filter(
-    (p) => p.jenisId === jenis.id
-  );
+  // const pengeluaranWithJenis = props.pengeluaran.filter(
+  //   (p) => p.jenisId === jenis.id
+  // );
 
-  let message = `Yakin ingin menghapus jenis "${jenis.nama}"?`;
-  if (pengeluaranWithJenis.length > 0) {
-    message += `\n\nAda ${pengeluaranWithJenis.length} pengeluaran yang menggunakan jenis ini. Data tersebut akan dipindah ke jenis "Umum".`;
-  }
+  // let message = `Yakin ingin menghapus jenis "${jenis.nama}"?`;
+  // if (pengeluaranWithJenis.length > 0) {
+  //   message += `\n\nAda ${pengeluaranWithJenis.length} pengeluaran yang menggunakan jenis ini. Data tersebut akan dipindah ke jenis "Umum".`;
+  // }
 
-  const confirmed = confirm(message);
-  if (confirmed) {
-    handleHapusJenis(jenis.id);
-  }
+  // const confirmed = confirm(message);
+  // if (confirmed) {
+  // }
+  handleHapusJenis(jenis.id);
 };
 
 const handleHapusJenis = (id: string) => {
@@ -105,7 +105,9 @@ const handleHapusJenis = (id: string) => {
     );
     if (pengeluaranWithJenis.length > 0) {
       pengeluaranWithJenis.forEach((p) => {
+        console.log("pindah jenis", p);
         p.jenisId = defaultJenisId.value;
+        console.log("pindah jenis selesai", p.jenisId);
       });
       emit("update-pengeluaran");
     }

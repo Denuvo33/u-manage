@@ -28,6 +28,7 @@ export const usePengeluaranData = () => {
 
   // Load data from localStorage
   const loadPengeluaran = () => {
+
     const savedPengeluaran = localStorage.getItem("pengeluaran");
     if (savedPengeluaran) {
       pengeluaran.value = JSON.parse(savedPengeluaran);
@@ -122,6 +123,7 @@ export const usePengeluaranData = () => {
     editId,
     editData,
     loadPengeluaran,
+    saveToLocalStorage,
     savePengeluaran,
     deletePengeluaran,
     openForm,
