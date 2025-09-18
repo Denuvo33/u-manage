@@ -35,7 +35,10 @@ live preview https://u-kelola.web.app/
 - **Pengeluaran**
   - Form input pengeluaran (tanggal, deskripsi, nominal).
   - Riwayat pengeluaran tersimpan di localStorage.
-  - <img width="1920" height="944" alt="image" src="https://github.com/user-attachments/assets/34ffd7a2-4a7d-496f-99f7-5c6d14222920" />
+  - Jenis Pengeluaran
+  - Filter
+  <img width="1917" height="944" alt="image" src="https://github.com/user-attachments/assets/f741f691-c902-4402-bffa-91df0c0fc933" />
+
 
 
 - **Laporan**
